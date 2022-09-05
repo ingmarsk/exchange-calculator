@@ -3,24 +3,29 @@
 require_relative 'spec_helper'
 
 RSpec.describe CLI do
-  subject { described_class }
+  let(:cli) { described_class }
+
+  let(:rate_service) { instance_double(Services::ExchangeRateApi) }
+  let(:converter_service) { instance_double(Services::CurrencyConverter) }
 
   describe '.start' do
     before do
-      allow_any_instance_of(Services::CurrencyConverter).to receive(:call)
-      allow(subject).to receive(:display_available_currencies)
-      allow(subject).to receive(:user_input).with(msg: 'From currency: ').and_return(from_currency_input)
-      allow(subject).to receive(:user_input).with(msg: 'To currency: ').and_return(to_currency_input)
-      allow(subject).to receive(:user_input).with(msg: 'Amount: ').and_return(amount)
+      allow(rate_service).to receive(:call)
+      allow(converter_service).to receive(:call)
+
+      allow(cli).to receive(:display_available_currencies)
+      allow(cli).to receive(:user_input).with(msg: 'From currency: ').and_return(from_currency_input)
+      allow(cli).to receive(:user_input).with(msg: 'To currency: ').and_return(to_currency_input)
+      allow(cli).to receive(:user_input).with(msg: 'Amount: ').and_return(amount)
     end
 
     context 'with invalid from_currency input value' do
       let(:from_currency_input) { 'ABC123' }
       let(:to_currency_input) { 'USD' }
       let(:amount) { 1 }
-  
+
       it 'returns an error message' do
-        expect { subject.start }.to output(CLI.display_error_msg).to_stdout
+        expect { cli.start }.to output(cli.display_error_msg).to_stdout
       end
     end
 
@@ -28,9 +33,9 @@ RSpec.describe CLI do
       let(:from_currency_input) { 'EUR' }
       let(:to_currency_input) { '123' }
       let(:amount) { 1.0 }
-  
+
       it 'returns an error message' do
-        expect { subject.start }.to output(CLI.display_error_msg).to_stdout
+        expect { cli.start }.to output(cli.display_error_msg).to_stdout
       end
     end
 
@@ -38,9 +43,9 @@ RSpec.describe CLI do
       let(:from_currency_input) { 'EUR' }
       let(:to_currency_input) { 'USD' }
       let(:amount) { 'abc' }
-  
+
       it 'returns an error message' do
-        expect { subject.start }.to output(CLI.display_error_msg).to_stdout
+        expect { cli.start }.to output(cli.display_error_msg).to_stdout
       end
     end
   end

@@ -2,16 +2,17 @@
 
 module Services
   class CurrencyConverter
-    attr_reader :from, :to, :amount
+    attr_reader :to, :amount, :rates
 
-    def initialize(amount:, from:, to:)
+    def initialize(amount:, rates:, to:)
       @amount = amount
-      @from = from
+      @rates = rates
       @to = to
     end
 
     def call
-      rates = Services::ExchangeRateApi.new(currency: from).get_rates
+      return if amount.nil? || rates[to].nil?
+
       amount * rates[to]
     end
   end

@@ -11,8 +11,11 @@ module Services
       @currency = currency
     end
 
-    def get_rates
-      self.class.get('/' + currency)['rates']
+    def call
+      response = self.class.get("/#{currency}")
+      rates = response['rates']
+
+      rates.nil? ? {} : rates
     end
   end
 end
