@@ -1,24 +1,33 @@
 # frozen_string_literal: true
 
 class CLI
-  class << self
-    AVAILABLE_CURRENCIES = ISO4217::Currency.currencies
+  AVAILABLE_CURRENCIES = ISO4217::Currency.currencies
 
+  class << self
     def start
       display_available_currencies
 
-      from_currency = user_input(msg: 'From currency: ')
-      to_currency = user_input(msg: 'To currency: ')
-      amount = user_input(msg: 'Amount: ')
+      user_inputs = CliServices::UserInputService.new.call
 
-      display_error_msg and return unless valid_inputs?(from: from_currency, to: to_currency, amount: amount)
+      puts user_inputs.error and return unless user_inputs.success?
 
-      exchange_rates = Services::ExchangeRateApi.new(currency: from_currency).call
-      converted_currency = Services::CurrencyConverter.new(amount: amount.to_f,
-                                                           to: to_currency,
-                                                           rates: exchange_rates).call
+      from_currency = user_inputs.payload[:from_currency]
+      to_currency = user_inputs.payload[:to_currency]
+      amount = user_inputs.payload[:amount]
 
-      display_success_msg(amount, from_currency, to_currency, converted_currency)
+      rates = ExchangeRateApiServices::CurrencyRatesService.new(currency: from_currency).call
+
+      if rates.success?
+        conversion = CurrencyServices::ConvertCurrencyService.new(rates: rates.payload, amount: amount.to_f, to: to_currency).call
+
+        if conversion.success?
+          handle_success(amount, from_currency, to_currency, conversion.payload)
+        else
+          handle_error(conversion&.error)
+        end
+      else
+        handle_error(rates&.error)
+      end
     end
 
     def display_available_currencies
@@ -33,30 +42,12 @@ class CLI
       puts "\n"
     end
 
-    def user_input(msg:)
-      print msg
-      gets.chomp
-    end
-
-    def valid_inputs?(from:, to:, amount:)
-      return false unless AVAILABLE_CURRENCIES.map(&:first).include? from
-      return false unless AVAILABLE_CURRENCIES.map(&:first).include? to
-
-      begin
-        Float(amount)
-      rescue StandardError
-        return false
-      end
-
-      true
-    end
-
-    def display_success_msg(amount, from_currency, to_currency, converted_currency)
+    def handle_success(amount, from_currency, to_currency, converted_currency)
       puts "\n#{amount} #{from_currency} equals to #{converted_currency} #{to_currency}\n\n"
     end
 
-    def display_error_msg
-      puts "\nInvalid inputs, please make sure currency is included in the list and the amount is a number\n\n"
+    def handle_error(error)
+      puts "\n#{error}\n"
     end
   end
 end

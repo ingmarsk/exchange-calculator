@@ -12,3 +12,6 @@ gem 'currencies'
 
 # Testing
 gem 'rspec'
+
+# Debugging
+gem 'pry-byebug'
