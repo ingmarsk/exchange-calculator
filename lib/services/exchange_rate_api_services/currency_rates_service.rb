@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module ExchangeRateApiServices
-  class CurrencyRatesService
+  class CurrencyRatesService < ApplicationService
     attr_reader :currency
 
     def initialize(args)
@@ -11,9 +11,9 @@ module ExchangeRateApiServices
     def call
       response = HTTParty.get("https://open.er-api.com/v6/latest/#{currency}")
     rescue HTTParty::Error => e
-      OpenStruct.new({success?: false, error: e})
+      self.class.error_response.new({ success?: false, error: e })
     else
-      OpenStruct.new({success?: true, payload: response['rates']})
+      self.class.success_response.new({ success?: true, payload: response['rates'] })
     end
   end
 end

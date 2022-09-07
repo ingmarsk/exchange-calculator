@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module CurrencyServices
-  class ConvertCurrencyService
+  class ConvertCurrencyService < ApplicationService
     attr_reader :amount, :rates, :to
 
     def initialize(args)
@@ -13,9 +13,10 @@ module CurrencyServices
     def call
       if amount && rates[to]
         result = amount * rates[to]
-        OpenStruct.new({success?: true, payload: result})
+
+        self.class.success_response.new({ success?: true, payload: result })
       else
-        OpenStruct.new({success?: false, error: "\nError convering currency\n"})
+        self.class.error_response.new({ success?: false, error: "\nError convering currency\n" })
       end
     end
   end

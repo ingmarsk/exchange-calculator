@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module CliServices
-  class UserInputService
+  class UserInputService < ApplicationService
     attr_reader :from_currency, :to_currency, :amount
 
     def initialize
@@ -12,12 +12,12 @@ module CliServices
 
     def call
       if valid_inputs?
-        OpenStruct.new({ success?: true, 
-                     payload: { from_currency: from_currency,
-                                to_currency: to_currency,
-                                amount: amount }} )
+        self.class.success_response.new(success?: true,
+                                        payload: {
+                                          from_currency: from_currency, to_currency: to_currency, amount: amount
+                                        })
       else
-        OpenStruct.new({success?: false, error: error_msg})
+        self.class.error_response.new(success?: false, error: error_msg)
       end
     end
 

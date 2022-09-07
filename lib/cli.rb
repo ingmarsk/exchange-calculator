@@ -6,9 +6,7 @@ class CLI
   class << self
     def start
       display_available_currencies
-
       user_inputs = CliServices::UserInputService.new.call
-
       puts user_inputs.error and return unless user_inputs.success?
 
       from_currency = user_inputs.payload[:from_currency]
@@ -16,18 +14,13 @@ class CLI
       amount = user_inputs.payload[:amount]
 
       rates = ExchangeRateApiServices::CurrencyRatesService.new(currency: from_currency).call
+      handle_error(rates&.error) and return unless rates.success?
 
-      if rates.success?
-        conversion = CurrencyServices::ConvertCurrencyService.new(rates: rates.payload, amount: amount.to_f, to: to_currency).call
+      conversion = CurrencyServices::ConvertCurrencyService.new(rates: rates.payload, amount: amount.to_f,
+                                                                to: to_currency).call
+      handle_error(conversion&.error) and return unless conversion.success?
 
-        if conversion.success?
-          handle_success(amount, from_currency, to_currency, conversion.payload)
-        else
-          handle_error(conversion&.error)
-        end
-      else
-        handle_error(rates&.error)
-      end
+      handle_success(amount, from_currency, to_currency, conversion.payload)
     end
 
     def display_available_currencies
