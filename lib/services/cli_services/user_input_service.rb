@@ -2,16 +2,12 @@
 
 module CliServices
   class UserInputService < ApplicationService
-    attr_reader :from_currency, :to_currency, :amount
-
-    def initialize
-      @from_currency = user_input(msg: 'From currency: ')
-      @to_currency = user_input(msg: 'To currency: ')
-      @amount = user_input(msg: 'Amount: ')
-    end
-
     def call
-      if valid_inputs?
+      from_currency = user_input(msg: 'From currency: ')
+      to_currency = user_input(msg: 'To currency: ')
+      amount = user_input(msg: 'Amount: ')
+
+      if valid_inputs?(from_currency: from_currency, to_currency: to_currency, amount: amount)
         self.class.success_response.new(success?: true,
                                         payload: {
                                           from_currency: from_currency, to_currency: to_currency, amount: amount
@@ -23,7 +19,7 @@ module CliServices
 
     private
 
-    def valid_inputs?
+    def valid_inputs?(from_currency:, to_currency:, amount:)
       return false unless CLI::AVAILABLE_CURRENCIES.map(&:first).include? from_currency
       return false unless CLI::AVAILABLE_CURRENCIES.map(&:first).include? to_currency
 

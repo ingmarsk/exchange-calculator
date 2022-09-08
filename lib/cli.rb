@@ -6,6 +6,7 @@ class CLI
   class << self
     def start
       display_available_currencies
+
       user_inputs = CliServices::UserInputService.new.call
       puts user_inputs.error and return unless user_inputs.success?
 
