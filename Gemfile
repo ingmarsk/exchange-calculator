@@ -3,15 +3,19 @@
 # Gemfile
 source 'https://rubygems.org'
 
+gem 'currencies' # ISO 4217 currencies list
 gem 'httparty'
-gem 'rubocop', require: false
 gem 'rubocop-rspec'
 
-# ISO 4217 currency list
-gem 'currencies'
+group :development do
+  gem 'rubocop', require: false
+end
 
-# Testing
-gem 'rspec'
+group :test do
+  gem 'rspec'
+  gem 'webmock'
+end
 
-# Debugging
-gem 'pry-byebug'
+group :development, :test do
+  gem 'pry-byebug'
+end
