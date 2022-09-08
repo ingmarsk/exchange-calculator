@@ -10,11 +10,15 @@ module ExchangeRateApiServices
 
     def call
       response = HTTParty.get("https://open.er-api.com/v6/latest/#{currency}")
-      rates = JSON.parse(response.body)['rates']
-    rescue HTTParty::Error => e
-      self.class.error_response.new({ success?: false, error: e })
-    else
-      self.class.success_response.new({ success?: true, payload: rates })
+
+      if response.success?
+        rates = JSON.parse(response.body)['rates']
+        self.class.success_response.new({ success?: true, payload: rates })
+      else
+        self.class.error_response.new({ success?: false, error: "Rates not found for #{currency}" })
+      end
+    rescue HTTParty::Error => error
+      self.class.error_response.new({ success?: false, error: error })
     end
   end
 end

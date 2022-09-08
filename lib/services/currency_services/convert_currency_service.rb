@@ -2,17 +2,17 @@
 
 module CurrencyServices
   class ConvertCurrencyService < ApplicationService
-    attr_reader :amount, :rates, :to
+    attr_reader :currency, :amount, :rates
 
     def initialize(args)
+      @currency = args[:currency]
       @amount = args[:amount]
       @rates = args[:rates]
-      @to = args[:to]
     end
 
     def call
-      if amount && rates[to]
-        result = amount * rates[to]
+      if amount && rates[currency]
+        result = amount * rates[currency]
 
         self.class.success_response.new({ success?: true, payload: result })
       else

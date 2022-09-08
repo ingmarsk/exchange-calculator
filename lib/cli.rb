@@ -16,8 +16,9 @@ class CLI
       rates = ExchangeRateApiServices::CurrencyRatesService.new(currency: from_currency).call
       handle_error(rates&.error) and return unless rates.success?
 
-      conversion = CurrencyServices::ConvertCurrencyService.new(rates: rates.payload, amount: amount.to_f,
-                                                                to: to_currency).call
+      conversion = CurrencyServices::ConvertCurrencyService.new(rates: rates.payload,
+                                                                amount: amount.to_f,
+                                                                currency: to_currency).call
       handle_error(conversion&.error) and return unless conversion.success?
 
       handle_success(amount, from_currency, to_currency, conversion.payload)
